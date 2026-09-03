@@ -1,61 +1,62 @@
 """
-    The MIT License (MIT)
+The MIT License (MIT)
 
-    Copyright (c) 2014 Vivek Jha
+Copyright (c) 2014 Vivek Jha
 
-    Permission is hereby granted, free of charge, to any person obtaining a copy
-    of this software and associated documentation files (the "Software"), to deal
-    in the Software without restriction, including without limitation the rights
-    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-    copies of the Software, and to permit persons to whom the Software is
-    furnished to do so, subject to the following conditions:
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-    The above copyright notice and this permission notice shall be included in all
-    copies or substantial portions of the Software.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-    SOFTWARE.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
 """
 
-import requests
 import csv
-from datetime import datetime as dt 
-from nsetools.bases import AbstractBaseExchange
+
 from nsetools import urls
+from nsetools.bases import AbstractBaseExchange
 from nsetools.ua import Session
 from nsetools.utils import cast_intfloat_string_values_to_intfloat
+
 
 class Nse(AbstractBaseExchange):
     """
     class which implements all the functionality for
     National Stock Exchange
     """
+
     __CODECACHE__ = None
 
     def __init__(self, session_refresh_interval=120):
         """Initialize a new NSE object.
         Initializes a session management for making API calls to NSE (National Stock Exchange).
         Args:
-            session_refresh_interval (int, optional): Time interval in seconds after which the session 
+            session_refresh_interval (int, optional): Time interval in seconds after which the session
                 should be refreshed. Defaults to 120 seconds.
         Note:
             The session refresh interval helps maintain an active connection with NSE servers by
             periodically creating a new session to prevent timeouts.
         """
-        
-        self.session_refresh_interval = session_refresh_interval 
+
+        self.session_refresh_interval = session_refresh_interval
         self.session = Session(session_refresh_interval)
 
     #############################
     ###      STOCKS APIS      ###
     #############################
-    
+
     def get_stock_codes(self):
         """Gets a list of stock codes traded in NSE.
 
@@ -75,7 +76,7 @@ class Nse(AbstractBaseExchange):
         symbols = []
         csv_reader = csv.DictReader(csv_content)
         for row in csv_reader:
-            symbols.append(row['SYMBOL'])
+            symbols.append(row["SYMBOL"])
         return symbols
 
     def is_valid_code(self, code):
@@ -107,7 +108,7 @@ class Nse(AbstractBaseExchange):
 
         Args:
             code (str): NSE stock symbol/code for which quote is to be fetched
-            all_data (bool, optional): If True returns complete quote data, if False returns only price info. 
+            all_data (bool, optional): If True returns complete quote data, if False returns only price info.
             Defaults to False.
 
         Returns:
@@ -140,9 +141,9 @@ class Nse(AbstractBaseExchange):
         code = code.upper()
         # TODO: implement if the code is valid
         res = self.session.fetch(urls.QUOTE_API_URL % code)
-        res = res.json()['priceInfo'] if all_data is False else res.json()
+        res = res.json()["priceInfo"] if all_data is False else res.json()
         return cast_intfloat_string_values_to_intfloat(res)
-    
+
     def get_52_week_high(self):
         """Retrieves a list of stocks that have hit their 52-week high.
 
@@ -154,7 +155,7 @@ class Nse(AbstractBaseExchange):
         Example:
             >>> nse.get_52_week_high()
             [{'symbol': 'AVANTIFEED',
-              'series': 'EQ', 
+              'series': 'EQ',
               'comapnyName': 'Avanti Feeds Limited',
               'new52WHL': 899,
               'prev52WHL': 849.9,
@@ -167,8 +168,8 @@ class Nse(AbstractBaseExchange):
             ]
         """
         res = self.session.fetch(urls.FIFTYTWO_WEEK_HIGH_URL)
-        return cast_intfloat_string_values_to_intfloat(res.json())['data']
-    
+        return cast_intfloat_string_values_to_intfloat(res.json())["data"]
+
     def get_52_week_low(self):
         """Retrieves a list of stocks that have hit their 52-week low.
 
@@ -180,7 +181,7 @@ class Nse(AbstractBaseExchange):
         Example:
             >>> nse.get_52_week_low()
             [{'symbol': 'AVANTIFEED',
-              'series': 'EQ', 
+              'series': 'EQ',
               'comapnyName': 'Avanti Feeds Limited',
               'new52WHL': 899,
               'prev52WHL': 849.9,
@@ -193,12 +194,12 @@ class Nse(AbstractBaseExchange):
             ]
         """
         res = self.session.fetch(urls.FIFTYTWO_WEEK_LOW_URL)
-        return cast_intfloat_string_values_to_intfloat(res.json())['data']
-    
+        return cast_intfloat_string_values_to_intfloat(res.json())["data"]
+
     #############################
     ###       INDEX APIS      ###
     #############################
-    
+
     def get_index_quote(self, index="NIFTY 50"):
         """Gets the quote for a specific index from NSE.
 
@@ -219,7 +220,7 @@ class Nse(AbstractBaseExchange):
             >>> nse.get_index_quote("NIFTY 50")
             {
             'key': 'BROAD MARKET INDICES',
-            'index': 'NIFTY 50', 
+            'index': 'NIFTY 50',
             'last': 22508.75,
             'variation': 111.55,
             'percentChange': 0.5,
@@ -232,18 +233,17 @@ class Nse(AbstractBaseExchange):
             # ... additional fields omitted for brevity
             }
         """
-        
+
         url = urls.ALL_INDICES_URL
         all_index_quote = self.get_all_index_quote()
-        index_list = [ i['indexSymbol'] for i in all_index_quote]
+        index_list = [i["indexSymbol"] for i in all_index_quote]
         index = index.upper()
-        index = ' '.join(index.split())
+        index = " ".join(index.split())
         if index in index_list:
-            response = list(filter(lambda idx: idx['indexSymbol'] == index, all_index_quote))[0]
+            response = list(filter(lambda idx: idx["indexSymbol"] == index, all_index_quote))[0]
             return cast_intfloat_string_values_to_intfloat(response)
-        else:
-            raise Exception('Wrong index code')
-    
+        raise Exception("Wrong index code")
+
     def get_index_list(self):
         """Gets a list of all NSE index symbols.
 
@@ -259,8 +259,8 @@ class Nse(AbstractBaseExchange):
             >>> print(indices)
             ['NIFTY 50', 'NIFTY BANK', 'NIFTY IT', ...]
         """
-        return [ i['indexSymbol'] for i in self.get_all_index_quote()]
-    
+        return [i["indexSymbol"] for i in self.get_all_index_quote()]
+
     def get_all_index_quote(self):
         """Gets information for all NSE indices in one request.
 
@@ -280,7 +280,7 @@ class Nse(AbstractBaseExchange):
                 {
                 'key': 'BROAD MARKET INDICES',
                 'index': 'NIFTY 50',
-                'indexSymbol': 'NIFTY 50', 
+                'indexSymbol': 'NIFTY 50',
                 'last': 22508.75,
                 'variation': 111.55,
                 'percentChange': 0.5,
@@ -296,8 +296,8 @@ class Nse(AbstractBaseExchange):
         """
         url = urls.ALL_INDICES_URL
         res = self.session.fetch(url)
-        return res.json()['data']
-    
+        return res.json()["data"]
+
     def get_top_gainers(self, index="NIFTY"):
         """Gets the list of top gaining stocks for the specified index.
 
@@ -308,19 +308,19 @@ class Nse(AbstractBaseExchange):
             index (str, optional): The index to get top gainers for. Defaults to "NIFTY".
             Valid values are:
             - NIFTY: Nifty 50 index
-            - BANKNIFTY: Bank Nifty index 
+            - BANKNIFTY: Bank Nifty index
             - NIFTYNEXT50: Nifty Next 50 index
-            - SecGtr20: Securities greater than 20 
+            - SecGtr20: Securities greater than 20
             - SecLwr20: Securities lower than 20
             - FNO: Futures & Options
             - ALL: All stocks
 
         Returns:
             list[dict]: List of dictionaries containing top gainer details.
-            
+
         Raises:
             ConnectionError: If unable to fetch data from NSE
-            
+
         Example:
             >>> nse = Nse()
             >>> gainers = nse.get_top_gainers()
@@ -342,7 +342,7 @@ class Nse(AbstractBaseExchange):
             'perChange': 3.93
             }
         """
-        return self._get_top_gainers_losers('gainers', index)
+        return self._get_top_gainers_losers("gainers", index)
 
     def get_top_losers(self, index="NIFTY"):  # Changed from None to "NIFTY"
         """Gets the top losers from specified index from NSE.
@@ -355,7 +355,7 @@ class Nse(AbstractBaseExchange):
                 Available options:
                     - NIFTY (Default)
                     - BANKNIFTY
-                    - NIFTYNEXT50  
+                    - NIFTYNEXT50
                     - SecGtr20
                     - SecLwr20
                     - FNO
@@ -363,7 +363,7 @@ class Nse(AbstractBaseExchange):
 
         Returns:
             list: List of dictionaries containing stock information with following keys:
-        
+
         Raises:
             URLError: When unable to connect to NSE
             ValueError: When invalid index is provided
@@ -375,9 +375,9 @@ class Nse(AbstractBaseExchange):
             >>> losers[0]
             {'symbol': 'TATAMOTORS', 'series': 'EQ', 'openPrice': 375.0, ...}
         """
-        return self._get_top_gainers_losers('losers', index)  # Changed from 'gainers' to 'losers'
-    
-    def get_advances_declines(self, index='nifty 50'):
+        return self._get_top_gainers_losers("losers", index)  # Changed from 'gainers' to 'losers'
+
+    def get_advances_declines(self, index="nifty 50"):
         """Gets the advances/declines data for given index.
         This method provides the number of stocks advancing and declining in a given index
         on NSE at any given point of time.
@@ -395,15 +395,15 @@ class Nse(AbstractBaseExchange):
         Note:
             The method is case-insensitive for the index parameter.
         """
-        
+
         # fixing this
         index = index.upper()
         index_quote = self.get_index_quote(index)
-        return {'advances': index_quote['advances'], 'declines': index_quote['declines']}
-    
+        return {"advances": index_quote["advances"], "declines": index_quote["declines"]}
+
     def get_stocks_in_index(self, index="NIFTY 50"):
         """Gets the list of symbols of stocks included in the specified NSE index.
-        The function retrieves the current constituents of a given NSE index like NIFTY 50, 
+        The function retrieves the current constituents of a given NSE index like NIFTY 50,
         NIFTY BANK etc. and returns their stock symbols.
         Args:
             index (str, optional): Name of the NSE index. Defaults to "NIFTY 50".
@@ -417,16 +417,16 @@ class Nse(AbstractBaseExchange):
             >>> nse = Nse()
             >>> nse.get_stocks_in_index("NIFTY 50")
             ['ADANIPORTS', 'ASIANPAINT', 'AXISBANK', 'BAJAJ-AUTO', 'BAJFINANCE', ...]
-            >>> nse.get_stocks_in_index("NIFTY BANK") 
+            >>> nse.get_stocks_in_index("NIFTY BANK")
             ['AUBANK', 'AXISBANK', 'BANDHANBNK', 'FEDERALBNK', 'HDFCBANK', ...]
         """
-        
+
         index = index.upper()
         url = urls.STOCKS_IN_INDEX_URL % index
         res = self.session.fetch(url)
         res_dict = res.json()
-        return  [stock['symbol'] for stock in res_dict['data']][1:]
-    
+        return [stock["symbol"] for stock in res_dict["data"]][1:]
+
     def get_stock_quote_in_index(self, index="NIFTY 50", include_index=False):
         """Gets stock quotes for all stocks in a given index.
         This function fetches real-time quotes for all stocks that are part of the specified index
@@ -455,16 +455,15 @@ class Nse(AbstractBaseExchange):
             >>> nifty_quotes = nse.get_stock_quote_in_index("NIFTY 50")
             >>> nifty_quotes_with_index = nse.get_stock_quote_in_index("NIFTY 50", include_index=True)
         """
-        
+
         index = index.upper()
         url = urls.STOCKS_IN_INDEX_URL % index
         res = self.session.fetch(url)
         res_dict = res.json()
         res_dict = cast_intfloat_string_values_to_intfloat(res_dict)
         if include_index is False:
-            return  [record for record in res_dict['data'] if record['priority'] == 0]
-        else:
-            return res_dict['data']
+            return [record for record in res_dict["data"] if record["priority"] == 0]
+        return res_dict["data"]
 
     def _get_top_gainers_losers(self, direction, index):
         """Internal method to fetch top gainers or losers for a given index.
@@ -479,7 +478,7 @@ class Nse(AbstractBaseExchange):
         Raises:
             ValueError: If invalid index name is provided
         """
-        index = index or 'NIFTY'  # Default to NIFTY if None
+        index = index or "NIFTY"  # Default to NIFTY if None
         index = index.upper()
         index = {
             "NIFTY": "NIFTY",
@@ -491,13 +490,13 @@ class Nse(AbstractBaseExchange):
             "SECGTR20": "SecGtr20",
             "SECLWR20": "SecLwr20",
             "FNO": "FOSec",
-            "ALL": "allSec"
+            "ALL": "allSec",
         }.get(index)
         if index is None:
             raise ValueError("Index must be one of NIFTY 50, NIFTY BANK, NIFTY NEXT 50, SecGtr20, SecLwr20, FNO, ALL")
-        url = urls.TOP_GAINERS_URL if direction == 'gainers' else urls.TOP_LOSERS_URL
+        url = urls.TOP_GAINERS_URL if direction == "gainers" else urls.TOP_LOSERS_URL
         res = self.session.fetch(url)
-        return cast_intfloat_string_values_to_intfloat(res.json())[index]['data']
+        return cast_intfloat_string_values_to_intfloat(res.json())[index]["data"]
 
     #############################
     ###    DERIVATIVE APIS    ###
@@ -512,7 +511,7 @@ class Nse(AbstractBaseExchange):
 
         Args:
             code (str): Stock code for which futures data needs to be fetched
-            expiry_date (str, optional): Expiry date in format DD-MMM-YYYY (e.g. "27-Mar-2025"). 
+            expiry_date (str, optional): Expiry date in format DD-MMM-YYYY (e.g. "27-Mar-2025").
                            Defaults to None.
 
         Returns:
@@ -521,7 +520,7 @@ class Nse(AbstractBaseExchange):
 
         Example:
             >>> nse = Nse()
-            >>> nse.get_future_quote('RELIANCE') 
+            >>> nse.get_future_quote('RELIANCE')
             [{'expiryDate': '27-Mar-2025',
               'lastPrice': 1246,
               'premium': 4.45,
@@ -538,53 +537,53 @@ class Nse(AbstractBaseExchange):
         res = self.session.fetch(url)
         res_dict = res.json()
         # list containing all options and futures data
-        data = res_dict['stocks']
+        data = res_dict["stocks"]
         # filter out only future data
-        future_data = [s for s in data if s['metadata']['instrumentType'] == "Stock Futures"]
+        future_data = [s for s in data if s["metadata"]["instrumentType"] == "Stock Futures"]
         # future data is very convoluted, so flatten-out the desired data
         # !! there is bug in spelling of the key 'dailyvolatility', it is not camel cased
         # fixing that in my code for uniformity
         filtered_data = [
             {
-                'expiryDate': record['metadata']['expiryDate'],
-                'lastPrice': record['metadata']['lastPrice'],
-                'premium': record['metadata']['lastPrice'] - record['underlyingValue'],
-                'openPrice': record['metadata']['openPrice'],
-                'highPrice': record['metadata']['highPrice'],
-                'lowPrice': record['metadata']['lowPrice'],
-                'closePrice': record['metadata']['closePrice'],
-                'prevClose': record['metadata']['prevClose'],
-                'change': record['metadata']['change'],
-                'pChange': record['metadata']['pChange'],
-                'numberOfContractsTraded': record['metadata']['numberOfContractsTraded'],
-                'totalTurnover': record['metadata']['totalTurnover'],
-                'underlyingValue': record['underlyingValue'],
-                'tradedVolume': record['marketDeptOrderBook']['tradeInfo']['tradedVolume'],
-                'openInterest': record['marketDeptOrderBook']['tradeInfo']['openInterest'],
-                'changeInOpenInterest': record['marketDeptOrderBook']['tradeInfo']['changeinOpenInterest'],
-                'pchangeinOpenInterest': record['marketDeptOrderBook']['tradeInfo']['pchangeinOpenInterest'],
-                'marketLot': record['marketDeptOrderBook']['tradeInfo']['marketLot'],
-                'dailyVolatility': record['marketDeptOrderBook']['otherInfo']['dailyvolatility'],
-                'annualisedVolatility': record['marketDeptOrderBook']['otherInfo']['annualisedVolatility']
+                "expiryDate": record["metadata"]["expiryDate"],
+                "lastPrice": record["metadata"]["lastPrice"],
+                "premium": record["metadata"]["lastPrice"] - record["underlyingValue"],
+                "openPrice": record["metadata"]["openPrice"],
+                "highPrice": record["metadata"]["highPrice"],
+                "lowPrice": record["metadata"]["lowPrice"],
+                "closePrice": record["metadata"]["closePrice"],
+                "prevClose": record["metadata"]["prevClose"],
+                "change": record["metadata"]["change"],
+                "pChange": record["metadata"]["pChange"],
+                "numberOfContractsTraded": record["metadata"]["numberOfContractsTraded"],
+                "totalTurnover": record["metadata"]["totalTurnover"],
+                "underlyingValue": record["underlyingValue"],
+                "tradedVolume": record["marketDeptOrderBook"]["tradeInfo"]["tradedVolume"],
+                "openInterest": record["marketDeptOrderBook"]["tradeInfo"]["openInterest"],
+                "changeInOpenInterest": record["marketDeptOrderBook"]["tradeInfo"]["changeinOpenInterest"],
+                "pchangeinOpenInterest": record["marketDeptOrderBook"]["tradeInfo"]["pchangeinOpenInterest"],
+                "marketLot": record["marketDeptOrderBook"]["tradeInfo"]["marketLot"],
+                "dailyVolatility": record["marketDeptOrderBook"]["otherInfo"]["dailyvolatility"],
+                "annualisedVolatility": record["marketDeptOrderBook"]["otherInfo"]["annualisedVolatility"],
             }
             for record in future_data
         ]
         # if expiry_date is provided, filter out data for that expiry date
         if expiry_date:
             # pick only the first record, there should be only one record for a given expiry date
-            filtered_data = [record for record in filtered_data if record['expiryDate'] == expiry_date][0]
+            filtered_data = [record for record in filtered_data if record["expiryDate"] == expiry_date][0]
         return cast_intfloat_string_values_to_intfloat(filtered_data)
-    
+
     def __str__(self):
         """Returns a string representation of the NSE driver class.
         Returns:
             str: A descriptive string identifying this as the NSE driver class.
         """
-        
-        return 'Driver Class for National Stock Exchange (NSE)'
+
+        return "Driver Class for National Stock Exchange (NSE)"
 
 
 if __name__ == "__main__":
     n = Nse()
     # data = n.download_bhavcopy("14th Dec")
-    n.get_quote('reliance')
+    n.get_quote("reliance")

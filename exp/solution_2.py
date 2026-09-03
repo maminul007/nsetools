@@ -1,6 +1,7 @@
 import json
 from datetime import datetime
 
+
 def parse_values(obj):
     for key, value in obj.items():
         if isinstance(value, str):
@@ -27,8 +28,9 @@ def parse_values(obj):
             obj[key] = [parse_values(item) if isinstance(item, dict) else item for item in value]
     return obj
 
+
 # Example nested JSON with string-coated numbers and timestamps
-nested_json = '''
+nested_json = """
 {
   "name": "John",
   "age": "30",
@@ -43,7 +45,7 @@ nested_json = '''
     "exam_date": "2022-12-31"
   }
 }
-'''
+"""
 
 # Parse the JSON and resolve string-coated numbers and timestamps
 parsed_data = json.loads(nested_json, object_hook=parse_values)

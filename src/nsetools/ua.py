@@ -1,11 +1,13 @@
-import requests
 import random
 from datetime import datetime as dt
-from nsetools import urls
 from time import sleep
 
+import requests
 
-class Session():
+from nsetools import urls
+
+
+class Session:
     __CACHE__ = {}
 
     def __init__(self, session_refresh_interval=60, cache_timeout=60):
@@ -22,7 +24,7 @@ class Session():
         self.cache_timeout = cache_timeout  # cache timeout in seconds
         self.create_session()
         self.flush()
-    
+
     def nse_headers(self):
         """Returns a dictionary of headers required for making requests to NSE (National Stock Exchange).
         These headers are designed to mimic a web browser request to prevent request blocking.
@@ -33,13 +35,14 @@ class Session():
                 - user-agent: Browser identification string
                 - X-Requested-With: Identifies AJAX requests
         """
-        
-        return {"Accept": "*/*",
-                "Accept-Language": "en-US,en;q=0.5",
-                "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36",
-                "X-Requested-With": "XMLHttpRequest"
-                }
-    
+
+        return {
+            "Accept": "*/*",
+            "Accept-Language": "en-US,en;q=0.5",
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36",
+            "X-Requested-With": "XMLHttpRequest",
+        }
+
     def create_session(self):
         """Creates and initializes a new HTTP session for NSE (National Stock Exchange) API requests.
         This method sets up a requests.Session object with appropriate headers for NSE and initializes
@@ -57,7 +60,7 @@ class Session():
         self._session.get(urls.NSE_HOME)
         self._session_init_time = dt.now()
         # Removed flush() call to keep cache and session management independent
-    
+
     def flush(self):
         """Flushes the cached user agent data.
         This method clears the internal cache dictionary storing user agent information
@@ -65,12 +68,12 @@ class Session():
         Returns:
             None
         """
-        
+
         self.__class__.__CACHE__ = {}
 
     def fetch(self, url):
         """Fetches data from a given URL with caching and session management.
-        This method implements a caching mechanism and session refresh logic to optimize 
+        This method implements a caching mechanism and session refresh logic to optimize
         network requests. It also includes random delays to prevent rate limiting.
         Args:
             url (str): The URL to fetch data from.

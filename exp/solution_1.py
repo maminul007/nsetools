@@ -1,5 +1,6 @@
 import json
 
+
 def parse_json(json_data):
     if isinstance(json_data, str):
         try:
@@ -16,8 +17,9 @@ def parse_json(json_data):
     else:
         return json_data
 
+
 # Example nested JSON with string-coated numbers
-nested_json = '''
+nested_json = """
 {
   "name": "John",
   "age": "30",
@@ -28,7 +30,7 @@ nested_json = '''
     "grades": ["80", "85", "90"]
   }
 }
-'''
+"""
 
 # Parse the JSON and resolve string-coated numbers
 parsed_data = parse_json(json.loads(nested_json))

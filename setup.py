@@ -1,6 +1,7 @@
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
-readme = '''
+
+readme = """
 Project Page
 =================
 http://nsetools.readthedocs.io
@@ -33,7 +34,7 @@ To keep it simple and supported on most of the platforms, it uses only core pyth
 Detailed Documenation
 ========================
 For complete documenation, please refer http://nsetools.readthedocs.io
-'''
+"""
 
 setup(
     name="nsetools",
@@ -43,7 +44,7 @@ setup(
     description="Python library for extracting realtime data from National Stock Exchange",
     license="MIT",
     keywords="nse quote market",
-    install_requires=['six', 'dateutils', 'requests'],
+    install_requires=["six", "dateutils", "requests"],
     url="http://vsjha18.github.com/nsetools",
     packages=find_packages(),
     long_description=readme,

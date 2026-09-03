@@ -1,7 +1,10 @@
 """
 Module for various data structure cleaning tasks
 """
+
 from datetime import datetime
+
+
 dirty_data = """
 {
     "fname": "Jon",
@@ -23,6 +26,7 @@ dirty_data = """
     ] 
 }
 """
+
 
 def parse_values(obj):
     for key, value in obj.items():

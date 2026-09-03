@@ -1,14 +1,14 @@
 #!/usr/bin/env python
-import requests
-import json
 import ast
-import re
-import os
-import pandas as pd
 import datetime as dt
+import os
 import pickle
+import re
 from argparse import ArgumentParser
-from pprint import pprint
+
+import pandas as pd
+import requests
+
 
 INVESTMENT_AMOUNT = 10000
 URL = "https://nseindia.com/live_market/dynaContent/live_watch/stock_watch/foSecStockWatch.json"
@@ -16,9 +16,22 @@ URL = "https://nseindia.com/live_market/dynaContent/live_watch/stock_watch/foSec
 # URL = "https://nseindia.com/live_market/dynaContent/live_watch/stock_watch/niftyStockWatch.json"
 filter = ["open", "high", "low", "last", "graph"]
 
-drop_columns = ['cAct', 'mPC', 'mVal', 'ntP', 'per',
-                'ptsC', 'trdVol', 'trdVolM', 'wkhicm_adj',
-                'wklocm_adj', 'xDt', 'yPC', 'wkhi', 'wklo']
+drop_columns = [
+    "cAct",
+    "mPC",
+    "mVal",
+    "ntP",
+    "per",
+    "ptsC",
+    "trdVol",
+    "trdVolM",
+    "wkhicm_adj",
+    "wklocm_adj",
+    "xDt",
+    "yPC",
+    "wkhi",
+    "wklo",
+]
 
 # create data dir if not available
 file_path = os.path.realpath(__file__)
@@ -40,8 +53,7 @@ if not os.path.exists(todays_dir_path):
     except Exception as err:
         print("make sure %s is writable: %s" % (todays_dir_path, str(err)))
 
-parser = ArgumentParser(
-    description='daytrading tool')
+parser = ArgumentParser(description="daytrading tool")
 
 parser.add_argument("-c", "--cat", action="store", help="provide category - fo, nifty, banks", default="fo")
 parser.add_argument("-s", "--snap", action="store", help="provide snap name")
@@ -59,36 +71,38 @@ else:
     print("provide proper category")
     exit(1)
 
+
 def download_data(url, fake=False):
     """download the raw data from web api"""
     if fake:
         return pickle.load(open("sample_data.pcl", "rb"))
-    else:
-        res = requests.get(url)
-        string_response = res.content.decode("utf-8")
-        dict_response = ast.literal_eval(string_response)
-        return dict_response["data"]
+    res = requests.get(url)
+    string_response = res.content.decode("utf-8")
+    dict_response = ast.literal_eval(string_response)
+    return dict_response["data"]
+
 
 def prepare_data(data):
     """return a dataframe after
-        1. cleaning server response
-        2. creating and reindexing dataframe.
+    1. cleaning server response
+    2. creating and reindexing dataframe.
     """
     for idx, value in enumerate(data):
         data[idx] = clean_server_response(value)
 
     # this method of loading dataframe helps in case where we have list
     # of dictionaries and we want all the dict keys to column headers.
-    stocks = pd.DataFrame.from_records(data).set_index('symbol')
+    stocks = pd.DataFrame.from_records(data).set_index("symbol")
 
     # drop few columns.
     stocks.drop(drop_columns, axis=1, inplace=True)
 
     # re-order columns.
-    stocks = stocks.reindex(['open', 'high', 'low', 'ltP'], axis=1)
+    stocks = stocks.reindex(["open", "high", "low", "ltP"], axis=1)
     stocks.columns = ["open", "high", "low", "last"]
 
     return stocks
+
 
 def clean_server_response(d):
     """cleans the server reponse by replacing:
@@ -98,15 +112,16 @@ def clean_server_response(d):
     """
     for key, value in d.items():
         if type(value) is str or isinstance(value, str):
-            if re.match('-', value):
+            if re.match("-", value):
                 value = None
-            elif re.search(r'^[0-9,.]+$', value):
+            elif re.search(r"^[0-9,.]+$", value):
                 # replace , to '', and type cast to int
-                value = float(re.sub(',', '', value))
+                value = float(re.sub(",", "", value))
             else:
-                value= str(value)
+                value = str(value)
         d[key] = value
     return d
+
 
 def get_long_stocks(stocks):
     # read this for chained indexing problems
@@ -118,17 +133,19 @@ def get_long_stocks(stocks):
     longs = attach_graph(longs)
     return longs
 
+
 def attach_graph(df):
     for idx, row in df.iterrows():
-        rnd = round(row.pir/10)
+        rnd = round(row.pir / 10)
         graph = ""
         for i in range(10):
-            if i == (rnd -1):
+            if i == (rnd - 1):
                 graph = graph + "^"
             else:
                 graph = graph + "."
         df.at[idx, "graph"] = graph
     return df
+
 
 def get_short_stocks(stocks):
     # read this for chained indexing problems
@@ -145,6 +162,7 @@ def get_quote(symbol, stocks):
     for stock in stocks:
         if stock["symbol"] == symbol:
             return stock
+
 
 def summary():
     data = download_data(URL, fake=False)
@@ -169,6 +187,7 @@ def invest(stocks):
     stocks = stocks.round(2)
     return stocks
 
+
 def snap(name):
     all, longs, shorts = summary()
     longs_snap_name = name + "_" + "longs.pcl"
@@ -181,6 +200,7 @@ def snap(name):
     longs.to_pickle(longs_snap_path)
     shorts.to_pickle(shorts_snap_path)
     print("snapping completed ...")
+
 
 def backtest(name):
     all, longs, shorts = summary()
@@ -215,6 +235,8 @@ def backtest(name):
     else:
         print("snap names are wrong it seems ...")
         exit(1)
+
+
 def main():
     # do this in any case
     summary()
@@ -225,6 +247,7 @@ def main():
     if cli.backtest:
         backtest(cli.backtest)
 
+
 if __name__ == "__main__":
     # http://finance.google.com/finance/info?client=ig&q=NSE:HDFC
     # all, longs, shorts = summary()
@@ -232,10 +255,10 @@ if __name__ == "__main__":
 
     # refactor later
     from time import sleep
+
     while True:
         main()
         sleep(120)
-
 
     # stocks, longs, shorts = summary()
     # invest(longs, shorts)
@@ -246,4 +269,3 @@ if __name__ == "__main__":
     # TODO: also show stocks which come back from their low's to the window.
     # TODO: show volume jumps from previous snap.
     # TODO: Price movement in relation to the index. This can also indicate interesting things.
-

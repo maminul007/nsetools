@@ -12,7 +12,7 @@ QUOTE_EQUITY_URL = f"{NSE_MAIN}/get-quotes/equity?symbol=%s"
 QUOTE_API_URL = f"{NSE_MAIN}/api/quote-equity?symbol=%s"
 
 # Stock list URLs
-STOCKS_CSV_URL = f"https://nsearchives.nseindia.com/content/equities/EQUITY_L.csv"
+STOCKS_CSV_URL = "https://nsearchives.nseindia.com/content/equities/EQUITY_L.csv"
 
 # Market movers URLs
 TOP_GAINERS_URL = f"{NSE_MAIN}/api/live-analysis-variations?index=gainers"

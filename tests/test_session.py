@@ -1,12 +1,13 @@
-import unittest
-import requests
 import time
-import sys
-import os
+import unittest
 from datetime import datetime as dt
+
+import requests
+from nsetools import urls
+
 # sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from nsetools.ua import Session
-from nsetools import urls
+
 
 class TestSession(unittest.TestCase):
     def setUp(self):
@@ -15,9 +16,7 @@ class TestSession(unittest.TestCase):
     def test_session_headers(self):
         """Test if proper headers are set"""
         headers = self.session.nse_headers()
-        essential_headers = [
-            "Accept", "Accept-Language", "user-agent", "X-Requested-With"
-        ]
+        essential_headers = ["Accept", "Accept-Language", "user-agent", "X-Requested-With"]
         for header in essential_headers:
             self.assertIn(header, headers)
         self.assertIsInstance(headers, dict)
@@ -32,24 +31,24 @@ class TestSession(unittest.TestCase):
         """Test if session refreshes after interval"""
         # Create session with very short interval
         self.session = Session(session_refresh_interval=1)
-        
+
         initial_time = self.session._session_init_time
         initial_session = self.session._session
-        
+
         # First request
         response = self.session.fetch(urls.NSE_HOME)
         self.assertEqual(response.status_code, 200)
-        
+
         # Wait longer than refresh interval
         time.sleep(2)
-        
+
         # Force session refresh with a different URL
         response = self.session.fetch(urls.NSE_MAIN)
         self.assertEqual(response.status_code, 200)
-        
+
         # Verify session was recreated
         self.assertIsNot(self.session._session, initial_session)
-        
+
         # Verify timestamp was updated
         self.assertNotEqual(initial_time, self.session._session_init_time)
         self.assertGreater(self.session._session_init_time, initial_time)
@@ -58,10 +57,10 @@ class TestSession(unittest.TestCase):
         """Test if session is reused within refresh interval"""
         response1 = self.session.fetch(urls.NSE_HOME)
         initial_time = self.session._session_init_time
-        
+
         response2 = self.session.fetch(urls.NSE_HOME)
         self.assertEqual(initial_time, self.session._session_init_time)
-        
+
         self.assertEqual(response1.status_code, 200)
         self.assertEqual(response2.status_code, 200)
 
@@ -70,26 +69,26 @@ class TestSession(unittest.TestCase):
         # First request should hit network
         response1 = self.session.fetch(urls.NSE_HOME)
         self.assertEqual(response1.status_code, 200)
-        
+
         # Second request should hit cache
         response2 = self.session.fetch(urls.NSE_HOME)
         self.assertEqual(response2.status_code, 200)
         self.assertEqual(response1, response2)  # Same response object
-        
+
         # Both responses should be in cache
         self.assertIn(urls.NSE_HOME, Session.__CACHE__)
 
     def test_cache_expiry(self):
         """Test if cache expires after timeout"""
         self.session.cache_timeout = 2  # Set short timeout for testing
-        
+
         # First request
         response1 = self.session.fetch(urls.NSE_HOME)
         self.assertEqual(response1.status_code, 200)
-        
+
         # Wait for cache to expire
         time.sleep(3)
-        
+
         # Second request should hit network again
         response2 = self.session.fetch(urls.NSE_HOME)
         self.assertEqual(response2.status_code, 200)
@@ -100,10 +99,11 @@ class TestSession(unittest.TestCase):
         # Cache a response
         response = self.session.fetch(urls.NSE_HOME)
         self.assertIn(urls.NSE_HOME, Session.__CACHE__)
-        
+
         # Flush cache
         self.session.flush()
         self.assertEqual(len(Session.__CACHE__), 0)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()
